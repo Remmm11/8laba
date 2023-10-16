@@ -21,33 +21,31 @@ def product(*args, repeat=1):
 
 class buying_laptops:
     def __init__(self, main):
+        s = ttk.Style()
+        s.configure('my.TButton', font='Arial 16')
+
         self.first_click = True
 
         self.main = main
-        self.main_label = Label(main,
-                                text='Усложнением будет являться качество производителя.\nЕсли качество производителя '
-                                     'низкое, то данный\nпроизводитель не будет учитываться в рассмотрении его к'
-                                     ' покупке.\nТак же у каждого компьютера есть своя стоимость.\nВывести вариант'
-                                     ' покупки с максимальной суммарной стоимостью.')
-        self.label1 = Label(text='\nВведите кол-во покупаемых компьютеров:')
-        self.entry1 = ttk.Entry(width=30, justify='center')
+        self.main_label = Label(main, text='Если хотите получить выборку всевозможных покупок:', font='Arial 16')
+        self.label1 = Label(text='\nВведите кол-во покупаемых компьютеров:', font='Arial 16')
+        self.entry1 = ttk.Entry(width=30, justify='center', font='Arial 16')
 
-        self.label2 = ttk.Label(text='Введите кол-во типов компьютеров:')
-        self.entry2 = ttk.Entry(width=30, justify='center')
+        self.label2 = ttk.Label(text='Введите кол-во типов компьютеров:', font='Arial 16')
+        self.entry2 = ttk.Entry(width=30, justify='center', font='Arial 16')
 
-        self.main_button = ttk.Button(text='Рассчитать', command=self.result)
+        self.main_button = ttk.Button(text='Рассчитать', command=self.result, style='my.TButton')
 
-        self.main_label.pack()
-        self.label1.pack()
-        self.entry1.pack()
-        self.label2.pack()
-        self.entry2.pack()
-        self.main_button.pack(expand=True)
+        self.main_label.place(x=100,y=10)
+        self.label1.place(x=157,y=40)
+        self.entry1.place(x=177,y=100)
+        self.label2.place(x=177,y=140)
+        self.entry2.place(x=177,y=170)
+        self.main_button.place(x=280,y=250)
 
     def result(self):
         self.combr = []
         self.maxstr = []
-        self.exception = []
         self.purchases = []
         self.combinations = []
         self.maxs = self.cntcomps = self.cnttips = 0
@@ -57,6 +55,10 @@ class buying_laptops:
             self.conditions = True
             self.cntcomps = int(self.entry1.get())
             self.cnttips = int(self.entry2.get())
+
+            if (self.cntcomps > 4 and self.cnttips > 10) or self.cntcomps > 6 or self.cnttips > 12:
+                messagebox.showwarning(title='Ошибка', message='Вы ввели слишком большие числа.')
+                self.conditions = False
 
             if self.cntcomps < 1 or self.cnttips < 1:
                 messagebox.showwarning(title='Ошибка', message='Принимаются только положительные числа.')
@@ -69,7 +71,6 @@ class buying_laptops:
                     self.result_window()
                     self.first_click = False
                 else:
-                    self.conclusion.destroy()
                     self.purchases_window.destroy()
                     self.result_window()
 
@@ -77,39 +78,9 @@ class buying_laptops:
             messagebox.showwarning(title='Ошибка', message='Введено не число.')
 
     def calculations(self):
-        self.computers = [f'{choice(self.BRANDS)} ({randrange(10999, 99999, 1000)} р.)' for i in
-                          range(1, self.cnttips + 1)]
+        self.computers = [f'№ {i}: {choice(self.BRANDS)}' for i in range(1, self.cnttips + 1)]
 
         self.сomp1 = str(self.computers)[2:-1].replace("'", '')
-
-        self.d = 0
-        if len(self.computers) > 1:
-            b = len(self.computers)
-            while (b - len(self.computers)) <= (b // 2 - 1):
-                r = choice(self.BRANDS)
-                if r not in self.exception:
-                    self.exception.append(r)
-
-                for i, varu in enumerate(self.computers):
-                    for j in self.exception:
-                        if j in varu:
-                            self.computers.pop(i)
-            else:
-                for i in self.exception:
-                    self.d = f'{self.d}, {i}'
-
-        else:
-            while len(self.exception) < 3:
-                r = choice(self.BRANDS)
-                if r not in self.exception:
-                    self.exception.append(r)
-
-            for i, varu in enumerate(self.computers):
-                for j in self.exception:
-                    if j in varu:
-                        self.computers.pop(i)
-            for i in self.exception:
-                self.d = f'{self.d} {i}'
 
         if self.computers:
             self.comp2 = str(self.computers)[2:-1].replace("'", '')
@@ -125,13 +96,10 @@ class buying_laptops:
                     b[j] = b[j] + 1
                 else:
                     b[j] = 1
-                s += int(j[-9:-4])
+
             if b not in self.combr:
                 self.combinations.append(varu)
 
-            if s >= self.maxs:
-                self.maxs = s
-                self.maxstr = varu
             self.combr.append(b)
 
         self.purchases = []
@@ -139,28 +107,9 @@ class buying_laptops:
             self.h = str(varu)[1:-2].replace("'", '').replace(', ', ' | ')
             self.purchases.append(f'{i + 1}. {self.h}')
 
-        self.result = str(self.maxstr[::-1])[2:-2].replace("'", '').replace(', ', ' | ')
-
     def result_window(self):
-        self.conclusion = Toplevel()
-        self.conclusion.title('Вывод')
-        self.conclusion.geometry('720x240')
-
-        self.label5 = Label(self.conclusion, text=f'\nКомпьютеры в магазине:\n{self.сomp1}')
-        self.label5.pack()
-
-        self.label6 = Label(self.conclusion, text=f'\nНекачественные производители:\n{self.d[2::]}')
-        self.label6.pack()
-
-        self.label7 = Label(self.conclusion, text=f'\nКомпьютеры подлежащие выбору:\n {self.comp2}')
-        self.label7.pack()
-
-        self.label8 = Label(self.conclusion, text=f'\nВариант самой дорогой покупки:\n'
-                                                  f'{self.result} - Сумма покупки: {self.maxs} руб.')
-        self.label8.pack()
-
         self.purchases_window = Toplevel()
-        self.purchases_window.title('Покупки')
+        self.purchases_window.title('Список покупок')
         self.purchases_window.geometry('720x480')
 
         self.purchases_list = Listbox(self.purchases_window)
